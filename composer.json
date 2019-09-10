@@ -1,0 +1,24 @@
+{
+    "name": "mrubiosan/petstore",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Marc Rubio",
+            "email": "mrubiosan@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Mrubiosan\\PetStore\\": "./src"
+        }
+    },
+    "require": {
+        "slim/slim": "^4.2",
+        "doctrine/dbal": "^2.9",
+        "robmorgan/phinx": "^0.11.1",
+        "squizlabs/php_codesniffer": "^3.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.3"
+    }
+}

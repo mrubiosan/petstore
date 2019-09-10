@@ -1,0 +1,13 @@
+version: "2"
+services:
+#  php:
+#    image: php:7.2
+#    volumes:
+#      - "./":""
+  db:
+    ports:
+      - "3316:3306"
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: dev
