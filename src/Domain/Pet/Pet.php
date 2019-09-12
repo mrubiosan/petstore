@@ -1,37 +1,48 @@
 <?php
 namespace Mrubiosan\PetStore\Domain\Pet;
 
+/**
+ * @Entity
+ */
 class Pet
 {
     /**
+     * @Id
+     * @Column(type="integer")
+     * @GeneratedValue
      * @var int
      */
     private $id;
 
     /**
+     * @ManyToOne(targetEntity="Category", cascade={"all"})
      * @var Category|null
      */
     private $category;
 
     /**
+     * @Column(type="string")
      * @var string
      */
     private $name = '';
 
     /**
-     * @var string[]
+     * @OneToMany(targetEntity="Photo", mappedBy="pet")
+     * @var Photo[]
      */
-    private $photoUrls = [];
+    private $photos = [];
 
     /**
+     * @ManyToMany(targetEntity="Tag", cascade={"all"})
      * @var Tag[]
      */
     private $tags = [];
 
     /**
-     * @var string|null
+     * @Column(type="string", options={"default":"available"})
+     * @var string
      */
-    private $status;
+    private $status = 'available';
 
     /**
      * @var string[]
