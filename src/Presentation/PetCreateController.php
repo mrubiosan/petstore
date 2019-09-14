@@ -37,6 +37,7 @@ class PetCreateController
         try {
             Assert::nullOrIsArray($body['category'] ?? null, '"category" should be an object');
             Assert::string($body['name'] ?? null, '"name" should be a string');
+            Assert::isArray($body['photoUrls'] ?? null, '"photoUrls" should be an array of strings');
             Assert::allString($body['photoUrls'] ?? null, '"photoUrls" should be an array of strings');
             Assert::nullOrIsArray($body['tags'] ?? null, '"tags" should be an array of objects');
             Assert::nullOrOneOf($body['status'] ?? null, Pet::VALID_STATUSES, '"status" should be one of: %2$s');
@@ -78,7 +79,7 @@ class PetCreateController
             $this->em->persist($pet);
             $this->em->flush();
         } catch (ORMException $e) {
-            $response = $response->withStatus(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);
+            return $response->withStatus(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);
         }
 
         $response->getBody()->write(json_encode($pet));
