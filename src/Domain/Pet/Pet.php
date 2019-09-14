@@ -47,7 +47,7 @@ class Pet implements \JsonSerializable
     /**
      * @var string[]
      */
-    private const VALID_STATUSES = ['available', 'pending', 'sold'];
+    const VALID_STATUSES = ['available', 'pending', 'sold'];
 
     public function __construct(int $id, string $name, string $status = 'available')
     {

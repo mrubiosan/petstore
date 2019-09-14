@@ -47,6 +47,16 @@ class Category implements \JsonSerializable
     }
 
     /**
+     * @param string $name
+     * @return Category
+     */
+    public function setName(string $name): Category
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    /**
      * @inheritDoc
      */
     public function jsonSerialize()

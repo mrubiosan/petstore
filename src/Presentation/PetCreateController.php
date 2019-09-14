@@ -11,6 +11,7 @@ use Mrubiosan\PetStore\Domain\Pet\PhotoUrl;
 use Mrubiosan\PetStore\Domain\Pet\Tag;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
+use Webmozart\Assert\Assert;
 
 class PetCreateController
 {
@@ -31,39 +32,46 @@ class PetCreateController
     public function create(Request $request, Response $response)
     {
         $body = $request->getParsedBody();
-        $pet = new Pet(0, $body['name']);
-        if (!empty($body['status'])) {
-            $pet->setStatus($body['status']);
-        }
 
-        $photoUrls = array_map(function($url) use ($pet) {
-            return new PhotoUrl($url, $pet);
-        }, $body['photoUrls'] ?? []);
-        $pet->setPhotoUrls(...$photoUrls);
+        // Slim body parser middleware unserializes JSON into arrays, so we check for array but JSON input is an object
+        try {
+            Assert::nullOrIsArray($body['category'] ?? null, '"category" should be an object');
+            Assert::string($body['name'] ?? null, '"name" should be a string');
+            Assert::allString($body['photoUrls'] ?? null, '"photoUrls" should be an array of strings');
+            Assert::nullOrIsArray($body['tags'] ?? null, '"tags" should be an array of objects');
+            Assert::nullOrOneOf($body['status'] ?? null, Pet::VALID_STATUSES, '"status" should be one of: %2$s');
 
-        if (!empty($body['category'])) {
-            /** @var EntityRepository $repo */
-            $repo = $this->em->getRepository(Category::class);
-            if ($repo->find($body['category']['id']) !== null) {
-                throw new \Exception("oops");
+            $pet = new Pet(0, $body['name']);
+            if (!empty($body['status'])) {
+                $pet->setStatus($body['status']);
             }
 
-            $pet->setCategory(new Category($body['category']['id'], $body['category']['name']));
-        }
-
-        if (!empty($body['tags'])) {
-            /** @var EntityRepository $repo */
-            $repo = $this->em->getRepository(Tag::class);
-            $existingTags = $repo->findBy(['id' => array_column($body['tags'], 'id')]);
-            if ($existingTags) {
-                throw new \Exception('oops');
+            try {
+                $photoUrls = array_map(function ($url) use ($pet) {
+                    return new PhotoUrl($url, $pet);
+                }, $body['photoUrls'] ?? []);
+                $pet->setPhotoUrls(...$photoUrls);
+            } catch (\InvalidArgumentException $e) {
+                $response->getBody()->write('"photoUrls" contains invalid URLs');
+                return $response->withStatus(StatusCodeInterface::STATUS_BAD_REQUEST);
             }
 
-            $tags = array_map(function($rawTag) {
-                return new Tag($rawTag['id'], $rawTag['name']);
-            }, $body['tags']);
+            if (!empty($body['category'])) {
+                Assert::integerish($body['category']['id'] ?? null, '"category.id" should be an integer');
+                Assert::string($body['category']['name'] ?? null, '"category.name" should be a string');
+                $pet->setCategory($this->buildCategory($body['category']));
+            }
 
-            $pet->setTags(...$tags);
+            if (!empty($body['tags'])) {
+                foreach ($body['tags'] as $i => $bodyTag) {
+                    Assert::integerish($bodyTag['id'] ?? null, "\"tags[$i].id\" should be an integer");
+                    Assert::string($bodyTag['name'] ?? null, "\"tags[$i].name\" should be a string");
+                }
+                $pet->setTags(...$this->buildTags($body['tags']));
+            }
+        } catch (\InvalidArgumentException $e) {
+            $response->getBody()->write($e->getMessage());
+            return $response->withStatus(StatusCodeInterface::STATUS_BAD_REQUEST);
         }
 
         try {
@@ -73,6 +81,46 @@ class PetCreateController
             $response = $response->withStatus(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);
         }
 
-        return $response;
+        $response->getBody()->write(json_encode($pet));
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(StatusCodeInterface::STATUS_CREATED);
+    }
+
+    private function buildCategory(array $rawCategory)
+    {
+        /** @var EntityRepository $repo */
+        $repo = $this->em->getRepository(Category::class);
+        /** @var Category|null $category */
+        if ($category = $repo->find($rawCategory['id'])) {
+            $category->setName($rawCategory['name']);
+        } else {
+            $category = new Category($rawCategory['id'], $rawCategory['name']);
+        }
+
+        return $category;
+    }
+
+    private function buildTags(array $rawTags) : array
+    {
+        /** @var EntityRepository $repo */
+        $repo = $this->em->getRepository(Tag::class);
+        $bodyTagsMap = array_column($rawTags, null, 'id');
+        $existingTags = $repo->findBy(['id' => array_keys($bodyTagsMap)]);
+        $existingTagIds = array_map(function(Tag $tag) {
+            return $tag->getId();
+        }, $existingTags);
+        $existingTagsMap = array_combine($existingTagIds, $existingTags);
+
+        $tags = [];
+        foreach ($bodyTagsMap as $tagId => $bodyTag) {
+            if (array_key_exists($tagId, $existingTagsMap)) {
+                $tags[] = $existingTagsMap[$tagId]->setName($bodyTag['name']);
+            } else {
+                $tags[] = new Tag($bodyTag['id'], $bodyTag['name']);
+            }
+        }
+
+        return $tags;
     }
 }

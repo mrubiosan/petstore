@@ -7,6 +7,7 @@ use Fig\Http\Message\StatusCodeInterface;
 use Mrubiosan\PetStore\Domain\Pet\Pet;
 use Mrubiosan\PetStore\Presentation\PetCreateController;
 use Mrubiosan\PetStore\Presentation\PetDeleteController;
+use Mrubiosan\PetStore\Presentation\PetFindController;
 use Mrubiosan\PetStore\Presentation\PetGetController;
 use Pimple\Container;
 use Pimple\Psr11\Container as PsrContainer;
@@ -34,6 +35,7 @@ class WebApplication
     {
         $app->group('/pet', function (RouteCollectorProxy $group) {
             $group->post('', PetCreateController::class.':create');
+            $group->get('/findByStatus', PetFindController::class.':find');
             $group->get('/{petId}', PetGetController::class.':get');
             $group->delete('/{petId}', PetDeleteController::class.':delete');
         })->add(function(ServerRequestInterface $request, RequestHandlerInterface $handler) use ($app) {
@@ -79,6 +81,10 @@ class WebApplication
 
         $container[PetDeleteController::class] = function (Container $c) {
             return new PetDeleteController($c['entityManager']);
+        };
+
+        $container[PetFindController::class] = function (Container $c) {
+            return new PetFindController($c['entityManager']);
         };
 
         return new PsrContainer($container);

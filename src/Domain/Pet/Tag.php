@@ -47,6 +47,16 @@ class Tag implements \JsonSerializable
     }
 
     /**
+     * @param string $name
+     * @return Tag
+     */
+    public function setName(string $name): Tag
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    /**
      * @inheritDoc
      */
     public function jsonSerialize()
