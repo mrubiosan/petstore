@@ -13,6 +13,8 @@
         }
     },
     "require": {
+        "php": ">=7.2",
+        "ext-json": "*",
         "slim/slim": "^4.2",
         "doctrine/dbal": "^2.9",
         "robmorgan/phinx": "^0.11.1",

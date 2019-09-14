@@ -4,7 +4,7 @@ namespace Mrubiosan\PetStore\Domain\Pet;
 /**
  * @Entity
  */
-class Category
+class Category implements \JsonSerializable
 {
     /**
      * @Id
@@ -44,5 +44,16 @@ class Category
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+        ];
     }
 }

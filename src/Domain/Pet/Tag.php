@@ -4,12 +4,11 @@ namespace Mrubiosan\PetStore\Domain\Pet;
 /**
  * @Entity
  */
-class Tag
+class Tag implements \JsonSerializable
 {
     /**
      * @Id
      * @Column(type="integer")
-     * @GeneratedValue
      * @var int
      */
     private $id;
@@ -45,5 +44,16 @@ class Tag
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+        ];
     }
 }
