@@ -1,11 +1,11 @@
 <?php
 namespace Mrubiosan\PetStore\Application\Fixtures;
 
-use Doctrine\Common\DataFixtures\FixtureInterface;
+use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Mrubiosan\PetStore\Domain\Pet\Category;
 
-class CategoryFixtureLoader implements FixtureInterface
+class CategoryFixtureLoader extends AbstractFixture
 {
     /**
      * @inheritDoc
@@ -19,7 +19,9 @@ class CategoryFixtureLoader implements FixtureInterface
         ];
 
         foreach ($categories as $id => $name) {
-            $manager->persist(new Category($id, $name));
+            $category = new Category($id, $name);
+            $manager->persist($category);
+            $this->addReference('category-'.$id, $category);
         }
 
         $manager->flush();

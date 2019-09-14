@@ -66,8 +66,8 @@ class WebApplication
                 'user'     => 'root',
                 'password' => 'root',
                 'dbname'   => 'dev',
-                'host'     => '127.0.0.1',
-                'port'     => 3316,
+                'host'     => getenv('DB_HOST') ?: '127.0.0.1',
+                'port'     => getenv('DB_PORT') ?: 3316,
                 'charset'  => 'utf8',
             ];
 

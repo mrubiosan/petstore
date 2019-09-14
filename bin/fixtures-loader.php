@@ -8,9 +8,12 @@ require __DIR__.'/../vendor/autoload.php';
 
 
 $loader = new Loader();
-$loader->loadFromDirectory(__DIR__.'/../src/Application/Fixtures');
-$em = (new \Mrubiosan\PetStore\Application\WebApplication())->create()->getContainer()->get('entityManager');
+$loader->addFixture(new \Mrubiosan\PetStore\Application\Fixtures\CategoryFixtureLoader());
+$loader->addFixture(new \Mrubiosan\PetStore\Application\Fixtures\TagFixtureLoader());
+$loader->addFixture(new \Mrubiosan\PetStore\Application\Fixtures\PetFixtureLoader());
+$loader->addFixture(new \Mrubiosan\PetStore\Application\Fixtures\PhotoUrlFixtureLoader());
 
+$em = (new \Mrubiosan\PetStore\Application\WebApplication())->create()->getContainer()->get('entityManager');
 
 $purger = new ORMPurger();
 $executor = new ORMExecutor($em, $purger);
