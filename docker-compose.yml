@@ -2,8 +2,6 @@ version: "2"
 services:
   php:
     image: mrubiosan/petstore:latest
-    volumes:
-      - "./:/app"
     ports:
       - "8099:8080"
     environment:
